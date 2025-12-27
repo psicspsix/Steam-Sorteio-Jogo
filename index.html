@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Steam Sorteador Noir</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            background-color: #000;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 10px #ff0000;
+            letter-spacing: 4px;
+        }
+
+        #instrucao {
+            font-size: 1.4rem;
+            margin: 1rem 0 2rem;
+            color: #ff6666;
+            max-width: 800px;
+        }
+
+        #numero {
+            font-size: 12rem;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.5s;
+            text-shadow: 0 0 30px #ff0000, 0 0 60px #ff0000;
+            margin: 2rem 0;
+        }
+
+        button {
+            padding: 20px 60px;
+            font-size: 2rem;
+            background-color: #1a0000;
+            color: #ff3333;
+            border: 3px solid #ff0000;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 0 20px #ff0000;
+            transition: all 0.3s;
+            font-family: 'Courier New', monospace;
+        }
+
+        button:hover {
+            background-color: #330000;
+            box-shadow: 0 0 40px #ff0000;
+            transform: scale(1.05);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        footer {
+            position: absolute;
+            bottom: 20px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>STEAM SORTEADOR</h1>
+    <p id="instrucao">
+        Após abrir a página da Steam, <strong>role duas páginas para baixo</strong><br>
+        para descobrir jogos grátis escondidos na lista!
+    </p>
+    <div id="numero"></div>
+    <button id="sortear">SORTEAR JOGO</button>
+
+    <footer>Números usados: <span id="contador">0</span> / 14.000</footer>
+
+    <script>
+        const botao = document.getElementById('sortear');
+        const numeroDiv = document.getElementById('numero');
+        const contador = document.getElementById('contador');
+
+        const TOTAL_NUMEROS = 14000;
+        const CHAVE_STORAGE = 'steam_sorteados';
+
+        let sorteados = JSON.parse(localStorage.getItem(CHAVE_STORAGE)) || [];
+
+        function atualizarContador() {
+            contador.textContent = sorteados.length;
+        }
+
+        function sortearNumero() {
+            if (sorteados.length >= TOTAL_NUMEROS) {
+                if (confirm('Todos os 14.000 números já foram sorteados! Deseja reiniciar?')) {
+                    sorteados = [];
+                    localStorage.removeItem(CHAVE_STORAGE);
+                    atualizarContador();
+                } else {
+                    return;
+                }
+            }
+
+            let numero;
+            do {
+                numero = Math.floor(Math.random() * TOTAL_NUMEROS) + 1;
+            } while (sorteados.includes(numero));
+
+            sorteados.push(numero);
+            localStorage.setItem(CHAVE_STORAGE, JSON.stringify(sorteados));
+            atualizarContador();
+
+            numeroDiv.textContent = numero.toString().padStart(5, '0');
+            numeroDiv.style.opacity = '1';
+
+            setTimeout(() => {
+                const url = `https://store.steampowered.com/genre/Free%20to%20Play?offset=${numero}`;
+                const novaAba = window.open(url, '_blank');
+                
+                if (!novaAba) {
+                    alert('Por favor, permita pop-ups para este site para que o sorteio funcione.');
+                }
+                
+                // Limpa o número após abrir
+                setTimeout(() => {
+                    numeroDiv.style.opacity = '0';
+                    setTimeout(() => {
+                        numeroDiv.textContent = '';
+                    }, 500);
+                }, 2000);
+            }, 1000);
+        }
+
+        botao.addEventListener('click', sortearNumero);
+        atualizarContador();
+    </script>
+</body>
+</html>
