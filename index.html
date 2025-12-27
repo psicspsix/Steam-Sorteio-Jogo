@@ -21,16 +21,9 @@
 
         h1 {
             font-size: 3rem;
-            margin-bottom: 1rem;
+            margin-bottom: 2rem;
             text-shadow: 0 0 10px #ff0000;
             letter-spacing: 4px;
-        }
-
-        #instrucao {
-            font-size: 1.4rem;
-            margin: 1rem 0 2rem;
-            color: #ff6666;
-            max-width: 800px;
         }
 
         #numero {
@@ -75,10 +68,6 @@
 </head>
 <body>
     <h1>STEAM SORTEADOR</h1>
-    <p id="instrucao">
-        Após abrir a página da Steam, <strong>role duas páginas para baixo</strong><br>
-        para descobrir jogos grátis escondidos na lista!
-    </p>
     <div id="numero"></div>
     <button id="sortear">SORTEAR JOGO</button>
 
@@ -92,6 +81,7 @@
         const TOTAL_NUMEROS = 14000;
         const CHAVE_STORAGE = 'steam_sorteados';
 
+        // Carrega ou inicia lista de números usados
         let sorteados = JSON.parse(localStorage.getItem(CHAVE_STORAGE)) || [];
 
         function atualizarContador() {
@@ -100,13 +90,9 @@
 
         function sortearNumero() {
             if (sorteados.length >= TOTAL_NUMEROS) {
-                if (confirm('Todos os 14.000 números já foram sorteados! Deseja reiniciar?')) {
-                    sorteados = [];
-                    localStorage.removeItem(CHAVE_STORAGE);
-                    atualizarContador();
-                } else {
-                    return;
-                }
+                alert('Todos os 14.000 números já foram sorteados! Reiniciando...');
+                sorteados = [];
+                localStorage.removeItem(CHAVE_STORAGE);
             }
 
             let numero;
@@ -114,32 +100,26 @@
                 numero = Math.floor(Math.random() * TOTAL_NUMEROS) + 1;
             } while (sorteados.includes(numero));
 
+            // Marca como usado
             sorteados.push(numero);
             localStorage.setItem(CHAVE_STORAGE, JSON.stringify(sorteados));
             atualizarContador();
 
+            // Mostra o número
             numeroDiv.textContent = numero.toString().padStart(5, '0');
             numeroDiv.style.opacity = '1';
 
+            // Após 1 segundo, redireciona
             setTimeout(() => {
                 const url = `https://store.steampowered.com/genre/Free%20to%20Play?offset=${numero}`;
-                const novaAba = window.open(url, '_blank');
-                
-                if (!novaAba) {
-                    alert('Por favor, permita pop-ups para este site para que o sorteio funcione.');
-                }
-                
-                // Limpa o número após abrir
-                setTimeout(() => {
-                    numeroDiv.style.opacity = '0';
-                    setTimeout(() => {
-                        numeroDiv.textContent = '';
-                    }, 500);
-                }, 2000);
+                window.open(url, '_blank'); // Abre em nova aba
+                // Ou use window.location.href = url; para substituir a página atual
             }, 1000);
         }
 
         botao.addEventListener('click', sortearNumero);
+
+        // Inicializa contador
         atualizarContador();
     </script>
 </body>
